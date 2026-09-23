@@ -12,8 +12,13 @@ from datasets import load_from_disk
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Hardware backend initialized: {device}")
 
-# model_id = "Qwen/Qwen2.5-3B-Instruct" 
 model_id = "meta-llama/Llama-3.2-3B-Instruct"
+model_layers = {
+    "meta-llama/Llama-3.2-3B-Instruct": 14,
+    "Qwen/Qwen2.5-3B-Instruct": 18,
+}
+if model_id not in model_layers:
+    raise ValueError(f"Unsupported model: {model_id}. Choose one of {list(model_layers)}")
 
 # Configure left-padding for batching causal language models
 tokenizer = AutoTokenizer.from_pretrained(model_id, padding_side="left")
@@ -27,38 +32,17 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16
 ).to(device)
 
-# llama models have 32 layers, qwen has 24. We extract the final hidden state from the last layer.
-def get_latent_vector_sequential(prompt, layer_idx=14):
-    formatted_prompt = tokenizer.apply_chat_template(
-        [{"role": "user", "content": prompt}], 
-        tokenize=False, 
-        add_generation_prompt=True
-    )
-    
-    inputs = tokenizer(
-        formatted_prompt, 
-        return_tensors="pt", 
-        truncation=True, 
-        max_length=1024
-    ).to(device)
-    
-    with torch.no_grad():
-        outputs = model(**inputs)
-        
-    hidden_states = outputs.hidden_states[layer_idx]
-    
-    raw_vector = hidden_states[0, -1, :].float().cpu().numpy()
-    return raw_vector / np.linalg.norm(raw_vector)
+def get_latent_vector_sequential(prompt, layer_idx=None):
+    """Extract a normalized latent vector for either supported model."""
+    if layer_idx is None:
+        layer_idx = model_layers[model_id]
 
-def get_latent_vector_sequential_qwen(prompt, layer_idx=18):
-    """Processes a single prompt without padding overhead."""
     formatted_prompt = tokenizer.apply_chat_template(
         [{"role": "user", "content": prompt}], 
         tokenize=False, 
         add_generation_prompt=True
     )
     
-    # No padding needed for batch size 1. Truncate extreme outliers to 1024.
     inputs = tokenizer(
         formatted_prompt, 
         return_tensors="pt", 
@@ -71,10 +55,7 @@ def get_latent_vector_sequential_qwen(prompt, layer_idx=18):
         
     hidden_states = outputs.hidden_states[layer_idx]
     
-    # Since there's no padding, the final token is genuinely at -1
     raw_vector = hidden_states[0, -1, :].float().cpu().numpy()
-    
-    # L2 Normalize
     return raw_vector / np.linalg.norm(raw_vector)
 
 
