@@ -42,6 +42,7 @@ for i in range(K):
 
 # 4. Evaluate Held-Out Prompts
 X_test = np.vstack([X_benign[test_benign_idx], X_malicious[test_malicious_idx]])
+prompts_test = np.concatenate([prompts_benign[test_benign_idx], prompts_malicious[test_malicious_idx]])
 ground_truth_test = ["Benign"] * len(test_benign_idx) + ["Malicious"] * len(test_malicious_idx)
 y_true = np.array([0] * len(test_benign_idx) + [1] * len(test_malicious_idx))
 
@@ -68,3 +69,28 @@ print(f"False Alarms (FP):         {np.sum(y_pred[:len(test_benign_idx)] == 1)} 
 print(f"Attacks Caught (TP):       {np.sum(y_pred[len(test_benign_idx):] == 1)} / {len(test_malicious_idx)}")
 print(f"Attacks Missed (FN):       {np.sum(y_pred[len(test_benign_idx):] == 0)} / {len(test_malicious_idx)}")
 print("=" * 40)
+
+# 6. Export Held-Out Results to CSV
+df = pd.DataFrame({
+    "Ground_Truth": ground_truth_test,
+    "RepE_Harm_Score": max_scores,
+    "Prediction": ["Malicious" if p == 1 else "Benign" for p in y_pred],
+    "Prompt_Text": prompts_test
+})
+
+def evaluate_status(row):
+    if row["Ground_Truth"] == "Malicious" and row["Prediction"] == "Malicious":
+        return "True Anomaly (Detected Attack)"
+    elif row["Ground_Truth"] == "Malicious" and row["Prediction"] == "Benign":
+        return "Missed Attack (False Negative)"
+    elif row["Ground_Truth"] == "Benign" and row["Prediction"] == "Malicious":
+        return "False Alarm (False Positive)"
+    return "Benign (Passed)"
+
+df["Result_Status"] = df.apply(evaluate_status, axis=1)
+df = df.sort_values(by="RepE_Harm_Score", ascending=False)
+
+ts = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+csv_path = f"./data/multi_vector_repe_results_{ts}.csv"
+df.to_csv(csv_path, index=False, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\")
+print(f"\nSaved evaluation metrics and prompts to {csv_path}")
