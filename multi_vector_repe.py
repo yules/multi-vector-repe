@@ -14,8 +14,8 @@ prompts_malicious = data["prompts_malicious"]
 
 # 2. Train/Test Split (100 Calibration / Rest for Testing)
 np.random.seed(42)
-calib_benign_idx = np.random.choice(len(X_benign), size=100, replace=False)
-calib_malicious_idx = np.random.choice(len(X_malicious), size=100, replace=False)
+calib_benign_idx = np.random.choice(len(X_benign), size=50, replace=False)
+calib_malicious_idx = np.random.choice(len(X_malicious), size=50, replace=False)
 
 test_benign_idx = np.setdiff1d(np.arange(len(X_benign)), calib_benign_idx)
 test_malicious_idx = np.setdiff1d(np.arange(len(X_malicious)), calib_malicious_idx)
