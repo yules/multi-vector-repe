@@ -1,0 +1,12 @@
+# Machine Learning & AI Frameworks
+torch>=2.0.0
+transformers>=4.38.0
+accelerate>=0.27.0
+
+# Dataset Management
+datasets>=2.18.0
+
+# Statistical Analysis & Math
+scikit-learn>=1.4.0
+numpy>=1.26.0
+tqdm

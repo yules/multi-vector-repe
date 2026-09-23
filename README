@@ -1,0 +1,142 @@
+# Multi-Vector REPE Anomaly Detector
+
+A research-oriented anomaly detection pipeline for identifying malicious or harmful model behavior using latent-space analysis and a multi-vector variant of Representation Engineering (RepE).
+
+This project extracts hidden-state representations from a language model, compares them against benign and malicious reference manifolds, and flags prompts whose activations align most strongly with harmful behavior.
+
+## Why this project exists
+
+Large language models can produce harmful outputs even when the model itself is not obviously failing in a conventional way. This project explores a detection strategy based on model internals instead of relying only on explicit textual outputs.
+
+The core idea is:
+
+- benign prompts occupy a relatively stable region in activation space
+- malicious prompts may cluster into multiple harmful sub-manifolds
+- a detector can score whether a new prompt is anomalous relative to benign behavior
+
+Rather than treating malicious intent as a single global direction, this implementation models it as multiple harmful subspaces using K-means clustering.
+
+## Method overview
+
+The detector follows this flow:
+
+1. Load a benign dataset and a malicious dataset.
+2. Pass prompt texts through a pretrained causal LM.
+3. Extract a normalized hidden-state vector from a chosen intermediate layer.
+4. Save the resulting latent vectors in `data/latent_vectors.npz`.
+5. Use a calibration subset to estimate:
+   - a benign center
+   - multiple malicious centroids via K-means clustering
+6. Construct harmful direction vectors from each malicious centroid relative to the benign baseline.
+7. Score held-out prompts by their maximum alignment with any harmful direction.
+8. Use a threshold derived from benign scores to detect anomalies.
+
+This makes the method a latent-space anomaly detector based on internal model representations rather than a standard text classifier.
+
+## Repository structure
+
+- `download_datasets.py` — downloads and stores the malicious and benign datasets locally.
+- `extract_vectors.py` — loads the model, extracts latent vectors for each prompt, and writes the processed feature set.
+- `multi_vector_repe.py` — runs the multi-vector RepE detector and reports evaluation metrics.
+- `prev_detection_scripts/` — earlier baseline implementations, including a single-vector RepE detector and a Mahalanobis-based anomaly detector.
+- `data/` — cached datasets and generated latent vectors.
+- `requirements.txt` — Python dependencies for the pipeline.
+
+## Datasets
+
+The project uses a mixture of benign and malicious sources:
+
+- HarmBench for malicious prompts
+- AdvBench for additional harmful behavior examples
+- UltraChat for benign conversational data
+
+The processed representation cache is saved to:
+
+- `data/latent_vectors.npz`
+
+## Setup
+
+Create a Python environment and install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running the pipeline
+
+### 1) Download datasets
+
+```bash
+python download_datasets.py
+```
+
+### 2) Extract latent vectors
+
+```bash
+python extract_vectors.py
+```
+
+This script loads the model, extracts hidden-state vectors for the prompt sets, and saves them to the data directory.
+
+### 3) Run the anomaly detector
+
+```bash
+python multi_vector_repe.py
+```
+
+This script:
+
+- loads cached latent vectors
+- splits data into calibration and test sets
+- clusters malicious calibration samples into K malicious sub-manifolds
+- evaluates the detector on held-out prompts
+- prints ROC-AUC and attack detection statistics
+
+## Expected outputs
+
+The detector reports metrics such as:
+
+- ROC-AUC score
+- decision threshold based on the benign distribution
+- benign pass rate
+- false alarms
+- attacks detected
+- attacks missed
+
+The current implementation uses a calibration set of 100 benign and 100 malicious samples, with the remainder reserved for evaluation.
+
+## Model configuration
+
+The default model used in the latent extraction stage is:
+
+- `meta-llama/Llama-3.2-3B-Instruct`
+
+A commented alternate is also included for:
+
+- `Qwen/Qwen2.5-3B-Instruct`
+
+The script can be adjusted to use a different model or hidden layer depending on your experiments.
+
+## Notes
+
+- This is a research-focused pipeline for model safety and anomaly detection.
+- Inference can be computationally expensive, so a GPU is recommended.
+- The layer index used for vector extraction is configurable in `extract_vectors.py`.
+- The project is intended for experimentation and analysis of malicious latent structure rather than deployment in production systems.
+
+## Related ideas
+
+This work is inspired by the broader literature on:
+
+- representation engineering (RepE)
+- latent-space anomaly detection
+- activation steering and safety probing
+- multi-manifold modeling of harmful behavior
+
+## License
+
+This repository is intended for academic and research use in AI safety experimentation. If this project is being shared more broadly, consider adding an explicit open-source license that matches your intended distribution terms.
+
+## Quick summary
+
+This repo implements a multi-vector representation-based anomaly detector that learns harmful activation directions from malicious prompts and flags suspicious behavior by measuring how strongly a new prompt aligns with those harmful subspaces.

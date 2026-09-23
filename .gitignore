@@ -1,0 +1,16 @@
+.# Virtual environments
+.venv/
+.venvnsource/
+
+# Python compilation files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE and OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Data files
+data/
