@@ -154,7 +154,9 @@ This work is inspired by the broader literature on:
 
 ## License
 
-This repository is intended for academic and research use in AI safety experimentation. If this project is being shared more broadly, consider adding an explicit open-source license that matches your intended distribution terms.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
+
+The MIT license applies to the code in this repository. Third-party models and datasets used by this project remain subject to their own individual licenses and terms.
 
 ## Quick summary
 
