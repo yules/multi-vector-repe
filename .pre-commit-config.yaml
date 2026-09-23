@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: unit-tests
+        name: unit tests
+        entry: python3 -m unittest discover -s tests -p 'test_*.py'
+        language: python
+        language_version: python3
+        additional_dependencies:
+          - torch>=2.0.0
+          - transformers>=4.38.0
+          - datasets>=2.18.0
+          - numpy>=1.26.0
+          - pandas>=2.0.0
+          - tqdm
+          - PyYAML>=6.0
+        pass_filenames: false

@@ -1,0 +1,8 @@
+model:
+  name: meta-llama/Llama-3.2-3B-Instruct
+
+models:
+  meta-llama/Llama-3.2-3B-Instruct:
+    layer_idx: 14
+  Qwen/Qwen2.5-3B-Instruct:
+    layer_idx: 18
