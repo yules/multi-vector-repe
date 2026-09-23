@@ -54,6 +54,25 @@ The processed representation cache is saved to:
 
 - `data/latent_vectors.npz`
 
+## Attribution and licenses
+
+This project uses the following third-party models and datasets. Please review
+their original terms before downloading, using, or redistributing them.
+
+### Models
+
+- [Meta Llama 3.2 3B Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct), developed by Meta. It is distributed under the [Llama 3.2 Community License](https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE) and is subject to Meta's [Acceptable Use Policy](https://www.llama.com/llama3_2/use-policy/).
+- [Qwen2.5 3B Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), developed by the Qwen Team. The model card lists the `qwen-research` license and provides the [Qwen2.5 citation](https://qwenlm.github.io/blog/qwen2.5/).
+
+### Datasets
+
+- [HarmBench](https://huggingface.co/datasets/walledai/HarmBench), released by Walled AI and the HarmBench authors under the MIT license. Please cite [Mazeika et al., 2024](https://arxiv.org/abs/2402.04249).
+- [AdvBench](https://huggingface.co/datasets/walledai/AdvBench), distributed under the MIT license. This repository downloads its `harmful_behaviors.csv` from the [LLM Attacks repository](https://github.com/llm-attacks/llm-attacks/blob/main/data/advbench/harmful_behaviors.csv). Please cite [Zou et al., 2023](https://arxiv.org/abs/2307.15043).
+- [UltraChat 200k](https://huggingface.co/datasets/HuggingFaceH4/ultrachat_200k), curated by Hugging Face H4. The dataset card requests citation of [Ding et al., 2023](https://arxiv.org/abs/2305.14233).
+
+The model and dataset licenses are separate from this repository's license and
+may include additional access or attribution requirements.
+
 ## Setup
 
 Create a Python environment and install dependencies:
